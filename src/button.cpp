@@ -1,43 +1,46 @@
-#include <Arduino.h>
 #include "button.h"
+
+#include <Arduino.h>
+
+#include <cstdint>
+
 #include "hardware_config.h"
 #include "led.h"
 #include "sensors.h"
 
-unsigned long button_pressed_at = 0;
-const unsigned long kButtonHoldTime = 5000;
+namespace button {
+
+uint64_t button_pressed_at = 0;
+const uint64_t kButtonHoldTime = 5000;
 
 bool button_held = false;
 
-void initButton() {
-  pinMode(kButtonPin, INPUT_PULLUP);  // Set button pin as input with pull-up resistor
+void init() {
+  pinMode(hardwareconfig::kButtonPin, INPUT_PULLUP);  // Set button pin as input with pull-up resistor
 }
 
-void HandleButtonEvent() {
-  if (digitalRead(kButtonPin) == LOW) {
+void handleEvent() {
+  if (digitalRead(hardwareconfig::kButtonPin) == LOW) {
     if (button_pressed_at == 0) {
-      Serial.println("Start button hold");
       button_pressed_at = millis();  // Start timing
-      ledOff();
+      led::off();
     } else if (!button_held && millis() - button_pressed_at >= kButtonHoldTime) {
       button_held = true;
-      OnButtonHeld();
+      onHold();
     }
   } else {
-    if (button_held) {
-      Serial.println("Button released after hold");
-    }
     button_pressed_at = 0;
     button_held = false;
   }
 }
 
-void OnButtonHeld() {
-  Serial.println("Button held for 5 seconds");
-  ledBlink(3, 100);
-  calibrateSoilSensorThreshold();
+void onHold() {
+  const int kBlinkCount = 3;
+  const int kBlinkDelayMs = 100;
+  struct led::BlinkArgs args = {kBlinkCount, kBlinkDelayMs};
+  led::blink(args);
+  sensors::calibrateSoilThreshold();
 }
 
-bool isButtonPressed() {
-  return button_pressed_at > 0;
-}
+bool isPressed() { return button_pressed_at > 0; }
+}  // namespace button

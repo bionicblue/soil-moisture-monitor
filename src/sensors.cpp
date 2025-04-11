@@ -1,15 +1,19 @@
 #include "sensors.h"
-#include "hardware_config.h"
+
 #include <DHT.h>
 
+#include "hardware_config.h"
+
+namespace sensors {
+
 // Threshold for dry soil
-int soil_sensor_threshold = 2500;
+const int kDefaultSoilSensorThreshold = 2500;
 
-DHT dht(DHTPIN, DHTTYPE);
+int soil_sensor_threshold = kDefaultSoilSensorThreshold;
 
-void initSensors() {
-  dht.begin();
-}
+DHT dht(hardwareconfig::kDhtPin, hardwareconfig::kDhtType);
+
+void init() { dht.begin(); }
 
 float readHumidity() {
   float humidity = dht.readHumidity();
@@ -19,26 +23,23 @@ float readHumidity() {
   return dht.readHumidity();
 }
 
-float readTemperatureF() {
-  float temperatureC = dht.readTemperature();
-  if (isnan(temperatureC)) {
+float readTemperatureFahrenheit() {
+  const float kCelsiusToFahrenheitNumerator = 9.0;
+  const float kCelsiusToFahrenheitDenominator = 5.0;
+  const int kCelsiusToFahrenheitOffset = 32;
+  float temperature_celcius = dht.readTemperature();
+  if (isnan(temperature_celcius)) {
     return NAN;
   }
-  return (temperatureC * 9.0 / 5.0) + 32;
+  return (temperature_celcius * kCelsiusToFahrenheitNumerator / kCelsiusToFahrenheitDenominator) +
+         kCelsiusToFahrenheitOffset;
 }
 
-int readSoilMoisture() {
-  return analogRead(SOIL_SENSOR_PIN);
-}
+int readSoilMoisture() { return analogRead(hardwareconfig::kSoilSensorPin); }
 
-bool isSoilDry(int soilMoistureValue) {
-  return soilMoistureValue > soil_sensor_threshold;
-}
+bool isSoilDry(int soil_moisture_value) { return soil_moisture_value > soil_sensor_threshold; }
 
-void calibrateSoilSensorThreshold() {
-  soil_sensor_threshold = readSoilMoisture();
-}
+void calibrateSoilThreshold() { soil_sensor_threshold = readSoilMoisture(); }
 
-int getSoilSensorThreshold() {
-  return soil_sensor_threshold;
-}
+int getSoilThreshold() { return soil_sensor_threshold; }
+}  // namespace sensors

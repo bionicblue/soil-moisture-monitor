@@ -1,16 +1,19 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <DHT.h>
+
+namespace hardwareconfig {
 // Digital Pins
-const int DHTPIN = 4;
-const int LED_PIN = 5;
+const int kDhtPin = 4;
+const int kLedPin = 5;
 const int kButtonPin = 15;
 
 // ADC Pins
-const int SOIL_SENSOR_PIN = 34;
-const int BATTERY_PIN = 35;
+const int kSoilSensorPin = 34;
+const int kBatteryPin = 35;
 
 // Hardware
-#define DHTTYPE DHT22
-
+constexpr const int kDhtType = DHT22;
+}  // namespace hardwareconfig
 #endif

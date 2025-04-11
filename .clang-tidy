@@ -1,0 +1,34 @@
+Checks: >
+  clang-analyzer-*,
+  bugprone-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  cppcoreguidelines-*,
+  hicpp-*,
+  google-*,
+  cppcoreguidelines-macro-usage,
+  -cppcoreguidelines-avoid-non-const-global-variables,
+  -modernize-use-trailing-return-type,
+  -modernize-use-auto,
+  -hicpp-use-auto
+
+WarningsAsErrors: 'clang-analyzer-*,bugprone-*'
+
+HeaderFilterRegex: '^(include/|src/)'
+
+FormatStyle: file
+
+CheckOptions:
+  - { key: modernize-use-nullptr.NullMacros, value: 'NULL' }
+  - { key: readability-function-size.LineThreshold, value: 50 }
+  - { key: readability-identifier-naming.VariableCase, value: lower_case }
+  - { key: readability-identifier-naming.FunctionCase, value: camelBack }
+  - { key: readability-identifier-naming.ConstantCase, value: CamelCase }
+  - { key: readability-identifier-naming.ConstantPrefix, value: 'k' }
+  - { key: readability-identifier-naming.GlobalConstantCase, value: CamelCase }
+  - { key: readability-identifier-naming.GlobalConstantPrefix, value: 'k' }
+  - { key: readability-identifier-naming.ClassCase, value: CamelCase }
+  - { key: readability-identifier-naming.StructCase, value: CamelCase }
+  - { key: readability-identifier-naming.EnumCase, value: CamelCase }
+  - { key: readability-identifier-naming.MacroDefinitionCase, value: UPPER_CASE }

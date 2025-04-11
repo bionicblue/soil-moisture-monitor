@@ -1,6 +1,8 @@
 #ifndef BATTERY_H
 #define BATTERY_H
 
-int getBatteryPercentage();
+namespace battery {
+int getPercentage();
+}
 
 #endif
