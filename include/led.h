@@ -1,9 +1,16 @@
 #ifndef LED_H
 #define LED_H
 
-void initLED();
-void ledOn();
-void ledOff();
-void ledBlink(int times, int delayTime);
+namespace led {
+struct BlinkArgs {
+  int times;
+  int delay_time;
+};
+
+void init();
+void on();
+void off();
+void blink(BlinkArgs args);
+}  // namespace led
 
 #endif

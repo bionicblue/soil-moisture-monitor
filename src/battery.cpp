@@ -1,17 +1,31 @@
 #include "battery.h"
-#include "hardware_config.h"
+
 #include <Arduino.h>
 
-#define MAX_BATTERY_VOLTAGE 4.2
-#define MIN_BATTERY_VOLTAGE 3.0
+#include "hardware_config.h"
 
-int getBatteryPercentage() {
-  int rawADC = analogRead(BATTERY_PIN);
-  float voltage = (rawADC / 4095.0) * 3.3 * 2;
+namespace battery {
 
-  int percentage = (int)((voltage - MIN_BATTERY_VOLTAGE) / (MAX_BATTERY_VOLTAGE - MIN_BATTERY_VOLTAGE) * 100);
-  if (percentage > 100) percentage = 100;
-  if (percentage < 0) percentage = 0;
+const float kMaxBatteryVoltage = 4.2;
+const float kMinBatteryVoltage = 3.0;
+const float kMaxADCValue = 4095.0;
+const float kReferenceVoltage = 3.3;
+const int kVoltageDivider = 2;  // Assuming a voltage divider with equal resistors
+const int kMaxPercentage = 100;
+
+int getPercentage() {
+  int raw_adc = analogRead(hardwareconfig::kBatteryPin);
+  double voltage = (static_cast<float>(raw_adc) / kMaxADCValue) * kReferenceVoltage * kVoltageDivider;
+
+  int percentage =
+      static_cast<int>((voltage - kMaxBatteryVoltage) / (kMaxBatteryVoltage - kMinBatteryVoltage) * kMaxPercentage);
+  if (percentage > kMaxPercentage) {
+    percentage = kMaxPercentage;
+  }
+  if (percentage < 0) {
+    percentage = 0;
+  }
 
   return percentage;
-}
+};
+}  // namespace battery
