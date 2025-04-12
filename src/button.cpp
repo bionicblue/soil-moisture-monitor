@@ -10,8 +10,8 @@
 
 namespace button {
 
-uint64_t button_pressed_at = 0;
-const uint64_t kButtonHoldTime = 5000;
+int button_pressed_at = 0;
+const int kButtonHoldTime = 5000;
 
 bool button_held = false;
 
