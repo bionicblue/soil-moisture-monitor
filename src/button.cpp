@@ -10,7 +10,7 @@
 
 namespace button {
 
-int button_pressed_at = 0;
+uint32_t button_pressed_at = 0;
 const int kButtonHoldTime = 5000;
 
 bool button_held = false;

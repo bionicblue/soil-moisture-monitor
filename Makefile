@@ -7,7 +7,8 @@ format:
 	clang-format -i $(SRCS) $(wildcard $(INCLUDE_DIR)/*.h) $(TEST_SRCS)
 
 lint:
-	platformio check -e esp32dev
+	platformio check -e esp32dev --fail-on-defect medium
+	platformio check -e esp32dev --fail-on-defect high
 
 build:
 	platformio run -e esp32dev
