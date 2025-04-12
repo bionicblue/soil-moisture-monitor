@@ -15,10 +15,12 @@ const int kMaxPercentage = 100;
 
 int getPercentage() {
   int raw_adc = analogRead(hardwareconfig::kBatteryPin);
+  
   double voltage = (static_cast<float>(raw_adc) / kMaxADCValue) * kReferenceVoltage * kVoltageDivider;
 
   int percentage =
-      static_cast<int>((voltage - kMaxBatteryVoltage) / (kMaxBatteryVoltage - kMinBatteryVoltage) * kMaxPercentage);
+      static_cast<int>((voltage - kMinBatteryVoltage) / (kMaxBatteryVoltage - kMinBatteryVoltage) * kMaxPercentage);
+  
   if (percentage > kMaxPercentage) {
     percentage = kMaxPercentage;
   }
