@@ -3,10 +3,10 @@ name: CI Pipeline
 on:
   pull_request:
     branches:
-      - master  # Run on PRs targeting the master branch
+      - main  # Run on PRs targeting the master main
   push:
     branches:
-      - master  # Run on pushes to the master branch
+      - main  # Run on pushes to the master main
 
 jobs:
   lint-and-test:
