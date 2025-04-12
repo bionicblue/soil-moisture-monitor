@@ -1,25 +1,24 @@
 #include "led.h"
+
 #include <Arduino.h>
 
-#define LED_PIN 5
+#include "hardware_config.h"
 
-void initLED() {
-  pinMode(LED_PIN, OUTPUT);
-}
+namespace led {
 
-void ledOn() {
-  digitalWrite(LED_PIN, HIGH);
-}
+void init() { pinMode(hardwareconfig::kLedPin, OUTPUT); }
 
-void ledOff() {
-  digitalWrite(LED_PIN, LOW);
-}
+void on() { digitalWrite(hardwareconfig::kLedPin, HIGH); }
 
-void ledBlink(int times, int delayTime) {
-  for (int i = 0; i < times; i++) {
-    ledOn();
-    delay(delayTime);
-    ledOff();
-    delay(delayTime);
+void off() { digitalWrite(hardwareconfig::kLedPin, LOW); }
+
+void blink(BlinkArgs args) {
+  for (int i = 0; i < args.times; i++) {
+    on();
+    // TODO(BionicBlue): Convert delay to a non-blocking version
+    delay(args.delay_time);
+    off();
+    delay(args.delay_time);
   }
 }
+}  // namespace led

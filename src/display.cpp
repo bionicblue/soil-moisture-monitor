@@ -1,83 +1,118 @@
-#include "display.h"
-#include "hardware_config.h"
 #include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
 
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 64
-#define OLED_RESET -1
+#include "display_manager.h"
+#include "hardware_config.h"
 
-#define BUTTON_PIN 15
+namespace display {
 
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+const int16_t kScreenWidth = 128;
+const int16_t kScreenHeight = 64;
+const int kOledReset = -1;
 
-void initDisplay() {
-  pinMode(BUTTON_PIN, INPUT_PULLUP);
+Manager::Manager() : display_(kScreenWidth, kScreenHeight, &Wire, kOledReset) {}
 
-  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+void Manager::init() {
+  pinMode(hardwareconfig::kButtonPin, INPUT_PULLUP);
+
+  const int kOled12CAddress = 0x3C;
+  if (!display_.begin(SSD1306_SWITCHCAPVCC, kOled12CAddress)) {
     Serial.println("SSD1306 allocation failed");
-    for (;;);
+    for (;;) {
+    };
   }
 }
 
-void updateDisplay(DisplayData& display_data) {
-  display.clearDisplay();
-  display.setCursor(0, 0);
-  display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
+void Manager::update(struct ScreenData& screen_data) {
+  display_.clearDisplay();
+  display_.setCursor(0, 0);
+  display_.setTextSize(1);
+  display_.setTextColor(SSD1306_WHITE);
 
-  // Display Humidity
-  display.print("Humidity: ");
-  if (isnan(display_data.humidity)) {
-    display.print("Error");
-  } else {
-    display.print(display_data.humidity);
-    display.println("%");
-  }
-
-  // Display Temperature
-  display.print("Temperature: ");
-  if (isnan(display_data.temperatureF)) {
-    display.print("Error");
-  } else {
-    display.print(display_data.temperatureF);
-    display.print(char(248)); // Degree symbol
-    display.println("F");
-  }
-
-  // Display Soil Moisture
-  display.print("Soil Moist: ");
-  display.print(display_data.soilMoistureValue);
-  display.println(" ADC");
-
-  display.print("Threshold: ");
-  display.print(display_data.soil_sensor_threshold);
-  display.println(" ADC");
-
-  display.print("Soil Dry: ");
-  display.println(display_data.soilDry ? "Yes" : "No");
-
-  // Draw Battery Icon at Bottom-Right
-  int batteryX = SCREEN_WIDTH - 30; // X position for the battery icon
-  int batteryY = SCREEN_HEIGHT - 10; // Y position for the battery icon
-  int batteryWidth = 20; // Width of the battery icon
-  int batteryHeight = 8; // Height of the battery icon
-
-  // Draw the battery outline
-  display.drawRect(batteryX, batteryY, batteryWidth, batteryHeight, SSD1306_WHITE);
-
-  // Draw the battery "cap"
-  display.fillRect(batteryX + batteryWidth, batteryY + 2, 2, batteryHeight - 4, SSD1306_WHITE);
-
-  // Fill the battery level based on percentage
-  int fillWidth = map(display_data.batteryPercent, 0, 100, 0, batteryWidth - 2); // Map percentage to battery width
-  display.fillRect(batteryX + 1, batteryY + 1, fillWidth, batteryHeight - 2, SSD1306_WHITE);
-
-  // Display Battery Percentage
-  display.setCursor(batteryX - 20, batteryY); // Position to the left of the battery icon
-  display.print(display_data.batteryPercent);
-  display.print("%");
+  humidity(screen_data);
+  temperature(screen_data);
+  soilMoisture(screen_data);
+  battery(screen_data);
 
   // Update the display
-  display.display();
+  display_.display();
 }
+
+void Manager::humidity(struct ScreenData& screen_data) {
+  display_.print("Humidity: ");
+
+  if (isnan(screen_data.humidity)) {
+    display_.print("Error");
+  } else {
+    display_.print(screen_data.humidity);
+    display_.println("%");
+  }
+}
+
+void Manager::temperature(struct ScreenData& screen_data) {
+  const int kDegreeSymbolChar = 248;
+
+  display_.print("Temperature: ");
+
+  if (isnan(screen_data.temperature_fahrenheit)) {
+    display_.print("Error");
+  } else {
+    display_.print(screen_data.temperature_fahrenheit);
+    display_.print(static_cast<char>(kDegreeSymbolChar));
+    display_.println("F");
+  }
+}
+
+void Manager::soilMoisture(struct ScreenData& screen_data) {
+  display_.print("Soil Moist: ");
+  display_.print(screen_data.soil_moisture_value);
+  display_.println(" ADC");
+
+  display_.print("Threshold: ");
+  display_.print(screen_data.soil_sensor_threshold);
+  display_.println(" ADC");
+
+  display_.print("Soil Dry: ");
+  display_.println(screen_data.is_soil_dry ? "Yes" : "No");
+}
+
+void Manager::battery(struct ScreenData& screen_data) {
+  // Draw Battery Icon at Bottom-Right
+  const int16_t kBatteryWidth = 20;
+  const int16_t kBatteryHeight = 8;
+  const int16_t kBatteryXOffset = 30;
+  const int16_t kBatteryYOffset = 10;
+  const int16_t kBatteryTextXOffset = 20;
+  const int kFullBatteryPercent = 100;
+  const int kEmptyBatteryPercent = 0;
+  const int kEmptyBatteryWidth = 0;
+
+  int16_t battery_x = kScreenWidth - kBatteryXOffset;
+  int16_t battery_y = kScreenHeight - kBatteryYOffset;
+
+  // Draw the battery outline
+  display_.drawRect(battery_x, battery_y, kBatteryWidth, kBatteryHeight, SSD1306_WHITE);
+
+  // Draw the battery "cap"
+  int16_t rect_x = static_cast<int16_t>(battery_x + kBatteryWidth);
+  int16_t rect_y = static_cast<int16_t>(battery_y + 2);
+  int16_t rect_width = 2;
+  int16_t rect_height = kBatteryHeight - 4;
+  display_.fillRect(rect_x, rect_y, rect_width, rect_height, SSD1306_WHITE);
+
+  // Fill the battery level based on percentage
+  int16_t fill_width = static_cast<int16_t>(map(screen_data.battery_percent, kEmptyBatteryPercent, kFullBatteryPercent,
+                                                kEmptyBatteryWidth,
+                                                kBatteryWidth - 2));  // Map percentage to battery width
+
+  rect_x = static_cast<int16_t>(battery_x + 1);
+  rect_y = static_cast<int16_t>(battery_y + 1);
+  rect_height = kBatteryHeight - 2;
+  display_.fillRect(rect_x, rect_y, fill_width, rect_height, SSD1306_WHITE);
+
+  // Display Battery Percentage
+  int16_t cursor_x = static_cast<int16_t>(battery_x - kBatteryTextXOffset);
+  display_.setCursor(cursor_x, battery_y);
+  display_.print(screen_data.battery_percent);
+  display_.print("%");
+}
+}  // namespace display
