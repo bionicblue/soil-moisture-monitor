@@ -46,6 +46,9 @@ run-tests: tests
 			$$test || exit 1; \
 	done
 
+build:
+	platformio run
+	
 # Lint the source and header files
 lint:
 	pio check --environment esp32dev

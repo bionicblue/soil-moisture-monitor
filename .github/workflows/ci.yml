@@ -1,0 +1,37 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches:
+      - master  # Run on PRs targeting the master branch
+  push:
+    branches:
+      - master  # Run on pushes to the master branch
+
+jobs:
+  lint-and-test:
+    name: Lint and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Install PlatformIO
+      - name: Install PlatformIO
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install platformio
+
+      # Step 3: Build the project
+      - name: Build the project
+        run: make build
+
+      # Step 4: Run linting (using cppcheck)
+      - name: Run linting
+        run: make lint
+
+      # Step 5: Run tests (if applicable)
+      - name: Run tests
+        run: make test
